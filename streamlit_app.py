@@ -20,6 +20,27 @@ prices = {
     "Pfand": 2.00
 }
 
+# Add custom CSS to control column layout
+st.markdown(
+    """
+    <style>
+    /* Force columns to stay side by side */
+    .stButton > button {
+        margin: 0;  /* Remove extra margin */
+        padding: 4px; /* Adjust padding for compact buttons */
+    }
+    .stColumn {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px; /* Adjust spacing between items */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # Initialize session state for drink counts
 if "counts" not in st.session_state:
     st.session_state.counts = {drink: 0 for drink in prices}
@@ -33,32 +54,21 @@ def update_pfand(increment):
 
 # Display drink buttons in a mobile-friendly layout
 for drink in prices:
-    cols = st.columns([2, 3, 3, 1])  # Adjust column sizes for better alignment
-    with cols[0]:
-        st.write(f"{drink}: {prices[drink]:.2f}")
-    with cols[1]:
-        if st.markdown(
-            f"""
-            <button style="width:100%; padding:0px; font-size:12px; cursor:pointer;" onclick="window.location.reload()">+</button>
-            """,
-            unsafe_allow_html=True,
-        ):
-            st.session_state.counts[drink] += 1
-            if drink != "Pfand":
-                update_pfand(1)
-    with cols[2]:
-        if st.markdown(
-            f"""
-            <button style="width:100%; padding:0px; font-size:12px; cursor:pointer;" onclick="window.location.reload()">-</button>
-            """,
-            unsafe_allow_html=True,
-        ):
-            if st.session_state.counts[drink] > 0:
-                st.session_state.counts[drink] -= 1
-                if drink != "Pfand":
-                    update_pfand(-1)
-    with cols[3]:
-        st.write(f"{st.session_state.counts[drink]}")  # Display current count
+    st.markdown(
+        f"""
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+            <div style="flex: 1;">{drink}: {prices[drink]:.2f}</div>
+            <div style="flex: 1;">
+                <button style="width:100%; padding:0px; font-size:12px; cursor:pointer;" onclick="window.location.reload()">+</button>
+            </div>
+            <div style="flex: 1;">
+                <button style="width:100%; padding:0px; font-size:12px; cursor:pointer;" onclick="window.location.reload()">-</button>
+            </div>
+            <div style="flex: 1; text-align: center;">{st.session_state.counts[drink]}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 total = 0
 for drink, count in st.session_state.counts.items():
