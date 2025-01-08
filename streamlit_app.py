@@ -57,11 +57,11 @@ for drink in prices:
     st.markdown(
         f"""
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-            <div style="flex: 1;">{drink}: {prices[drink]:.2f}</div>
-            <div style="flex: 1;">
+            <div style="flex: 2;">{drink}: {prices[drink]:.2f}</div>
+            <div style="flex: 3;">
                 <button style="width:100%; padding:0px; font-size:12px; cursor:pointer;" onclick="window.location.reload()">+</button>
             </div>
-            <div style="flex: 1;">
+            <div style="flex: 3;">
                 <button style="width:100%; padding:0px; font-size:12px; cursor:pointer;" onclick="window.location.reload()">-</button>
             </div>
             <div style="flex: 1; text-align: center;">{st.session_state.counts[drink]}</div>
