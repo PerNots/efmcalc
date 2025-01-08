@@ -1,5 +1,7 @@
 import streamlit as st
 
+st.set_page_config(layout="wide")
+
 st.write('''<style>
 
 [data-testid="column"] {
@@ -153,3 +155,4 @@ st.write("Pfand wird automatisch hinzugefügt und muss manuell wieder abgezogen 
 st.write("Bsp.: Kunde kommt mit 2 leeren Bechern Bier und will ein Neues (-> Bier auf +1, Pfand auf -1 und eine Pfandmarke geben lassen)")
 st.write("")
 st.write("Falls die Kacheln unter den Getränkenamen erscheinen, kann die Website im Browser herausgezoomt werden. Leider passt sich die app dynamisch an die Bildschirmgröße an.")
+st.image("https://i.imgur.com/WyGVqkT.png")
