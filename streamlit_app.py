@@ -37,28 +37,22 @@ for drink in prices:
     with cols[0]:
         st.write(f"{drink}: {prices[drink]:.2f}")
     with cols[1]:
-        if st.markdown(
-            f"""
-            <button style="width:100%; padding:0px; font-size:12px; cursor:pointer;" onclick="window.location.reload()">+</button>
-            """,
-            unsafe_allow_html=True,
-        ):
-            st.session_state.counts[drink] += 1
-            if drink != "Pfand":
-                update_pfand(1)
-    with cols[2]:
-        if st.markdown(
-            f"""
-            <button style="width:100%; padding:0px; font-size:12px; cursor:pointer;" onclick="window.location.reload()">-</button>
-            """,
-            unsafe_allow_html=True,
-        ):
-            if st.session_state.counts[drink] > 0:
-                st.session_state.counts[drink] -= 1
-                if drink != "Pfand":
-                    update_pfand(-1)
+        with st.container():
+            col1, col2 = st.columns([1, 1])  # Equal width for buttons
+            with col1:
+                if st.button(" + ", key=f"add_{drink}", use_container_width=True):
+                    st.session_state.counts[drink] += 1
+                    if drink != "Pfand":
+                        update_pfand(1)
+            with col2:
+                if st.button(" - ", key=f"subtract_{drink}", use_container_width=True):
+                    if st.session_state.counts[drink] > 0:
+                        st.session_state.counts[drink] -= 1
+                        if drink != "Pfand":
+                            update_pfand(-1)
     with cols[3]:
         st.write(f"{st.session_state.counts[drink]}")  # Display current count
+
 
 total = 0
 for drink, count in st.session_state.counts.items():
