@@ -76,10 +76,10 @@ def calculate_pfand():
             total_pfand += count * 2  # 2€ of Pfand per drink
     return total_pfand
 
-# Display drink buttons in a mobile-friendly layout
-with st.form(key="drinkform",clear_on_submit=True):
+# Form layout with alternating column backgrounds
+with st.form(key="drinkform", clear_on_submit=True):
     for drink in prices:
-        cols = st.columns([1, 3])  # Adjust column sizes [1, 1]
+        cols = st.columns([1, 3], vertical_alignment="center")  # Adjust column sizes [1, 3]
         with cols[0]:
             st.write(f"{drink}")
         with cols[1]:
@@ -97,8 +97,9 @@ with st.form(key="drinkform",clear_on_submit=True):
             # Update session state for counts if there is a change
             if new_count != current_count:
                 st.session_state.counts[drink] = new_count
+
     for drink in prices_pfand:
-        cols = st.columns([1, 3])  # Adjust column sizes
+        cols = st.columns([1, 3], vertical_alignment="center")  # Adjust column sizes
         with cols[0]:
             st.write(f"{drink}")
         with cols[1]:
@@ -107,14 +108,12 @@ with st.form(key="drinkform",clear_on_submit=True):
                 label="change",
                 key=drink + "plus",
                 step=1,
-                #min_value=0,
-                #min_value=-st.session_state.pfand_total,  # Allow up to the current total Pfand for reduction
                 label_visibility="collapsed",
                 value=0
             )
 
-    
     submitButton = st.form_submit_button(label='Rechnen')
+
 
 # After form submission, calculate total and reset if needed
 if submitButton:
