@@ -66,11 +66,11 @@ def calculate_pfand():
     return total_pfand
 
 # Display drink buttons in a mobile-friendly layout
-with st.form(key="drinkform"):
+with st.form(key="drinkform",clear_on_submit=True):
     for drink in prices:
-        cols = st.columns([1, 1])  # Adjust column sizes
+        cols = st.columns(2)  # Adjust column sizes [1, 1]
         with cols[0]:
-            st.write(f"{drink}")
+            st.markdown(f"<small>{drink}</small>", unsafe_allow_html=True)
         with cols[1]:
             # Capture the current count and use it for the number input
             current_count = st.session_state.counts[drink]
@@ -89,7 +89,7 @@ with st.form(key="drinkform"):
     for drink in prices_pfand:
         cols = st.columns([1, 1])  # Adjust column sizes
         with cols[0]:
-            st.write(f"{drink}")
+            st.markdown(f"<small>{drink}</small>", unsafe_allow_html=True)
         with cols[1]:
             # Capture the current count and use it for the number input
             pfand_back = st.number_input(
@@ -140,4 +140,5 @@ if submitButton:
 st.subheader("")
 st.subheader("info")
 st.write("Knöpfe drücken um Getränke hinzuzufügen oder abzuziehen.")
-st.write("Pfand wird automatisch hinzugefügt und muss manuell wieder abgezogen werden falls nicht fällig.")
+st.write("Pfand wird automatisch hinzugefügt und muss manuell wieder abgezogen werden falls nicht fällig. Dies ist durch negative Beträge in 'Pfand zurück' möglich.")
+st.write("Bsp.: Kunde kommt mit 2 leeren Bechern Bier und will ein Neues (-> Bier auf +1, Pfand auf -1 und eine Pfandmarke geben lassen)")
