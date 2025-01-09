@@ -13,7 +13,7 @@ emoji_list = [
     "🥒", "🍸🐂", "🎯🐂", "🎯", "🥜", "🔴"
 ]
 
-names_prices = {
+prices = {
     "Wasser": 3.50,
     "Cola": 3.50,
     "Spezi": 3.50,
@@ -35,8 +35,8 @@ names_prices = {
 # Initial DataFrame that will be displayed as interactive Table
 data = {
     'Icon': emoji_list,
-    'Name': list(names_prices.keys()),
-    'Menge': [0] * len(names_prices),  # Initialize Amount as 0 for each item
+    'Name': list(prices.keys()),
+    'Menge': [0] * len(prices),  # Initialize Amount as 0 for each item
 }
 
 # Store the initial data in session_state if it's not already set
