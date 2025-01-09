@@ -155,3 +155,77 @@ st.write("Bsp.: Kunde kommt mit 2 leeren Bechern Bier und will ein Neues (-> Bie
 st.write("")
 st.write("Falls die Kacheln unter den Getränkenamen erscheinen, kann die Website im Browser herausgezoomt werden. Leider passt sich die app dynamisch an die Bildschirmgröße an.")
 st.image("https://i.imgur.com/WyGVqkT.png")
+
+
+
+
+import streamlit as st
+import pandas as pd
+from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
+
+data = {
+    'Name': ['a', 'b', 'c'],
+    'Amount': [10, 20, 30],
+    'Paid': [True, False, True],
+    'Attended': [False, True, True]
+}
+
+# JavaScript code to create a number input field in the grid
+number_input_renderer = JsCode("""
+class NumberInputRenderer {
+    init(params) {
+        this.params = params;
+
+        this.eGui = document.createElement('input');
+        this.eGui.type = 'number';
+        this.eGui.value = params.value;
+        this.eGui.style.width = '100%';
+
+        this.changeHandler = this.changeHandler.bind(this);
+        this.eGui.addEventListener('input', this.changeHandler);
+    }
+
+    changeHandler(e) {
+        let newValue = e.target.value;
+        let colId = this.params.column.colId;
+        this.params.node.setDataValue(colId, parseFloat(newValue));
+    }
+
+    getGui() {
+        return this.eGui;
+    }
+
+    destroy() {
+        this.eGui.removeEventListener('input', this.changeHandler);
+    }
+}
+""")
+
+# DataFrame
+df = pd.DataFrame(data)
+
+# Display initial data
+st.write('#### Initial Data')
+st.dataframe(df)
+
+# Configure AgGrid
+gb = GridOptionsBuilder.from_dataframe(df)
+gb.configure_column('Amount', editable=True, cellRenderer=number_input_renderer)  # Number input
+gb.configure_column('Paid', editable=True, cellRenderer=None)  # Example for keeping checkboxes
+gb.configure_column('Attended', editable=True, cellRenderer=None)  # Example for keeping checkboxes
+
+# Create AgGrid interface
+st.write('#### Interactive Grid')
+ag = AgGrid(
+    df,
+    gridOptions=gb.build(),
+    allow_unsafe_jscode=True,
+    enable_enterprise_modules=False
+)
+
+# Get updated data
+new_data = ag['data']
+
+# Display updated data
+st.write('#### Updated Data')
+st.dataframe(new_data)
