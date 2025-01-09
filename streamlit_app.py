@@ -161,7 +161,7 @@ if st.button("Berechnen"):
     pfand_return=0
     pfandfree =0
     for i, row in new_data.iterrows():
-        if row['Name'] not in ("Pfanderlass", "Jäger", "FangDieNuss"):  # Exclude these drinks from counting towards Pfand
+        if row['Name'] not in ("Pfanderlass", "Jäger", "Nuss"):  # Exclude these drinks from counting towards Pfand
             name = row['Name']
             Menge = row['Menge']
             total_sum += Menge * prices.get(name, 0)  # Multiply with the price from the dict
@@ -172,7 +172,7 @@ if st.button("Berechnen"):
             Menge = row['Menge']
             total_sum += Menge * (-2) # calculate pfand back
             pfand_return += Menge # number of pfand refunded (number of red chips received)
-        elif row['Name'] in ("Jäger", "FangDieNuss"):
+        elif row['Name'] in ("Jäger", "Nuss"):
             name = row['Name']
             Menge = row['Menge']
             total_sum += Menge * prices.get(name, 0) # calculate price without pfand
