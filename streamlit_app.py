@@ -129,8 +129,8 @@ gb.configure_column('Icon',
 gb.configure_grid_options(update_mode="VALUE_CHANGED", 
                           suppressMovableColumns=True,
                           domLayout='autoHeight', #adjust gridheight to columns
-                          height = 462,
-                          suppressAutoSize=True,
+                          height = 800,
+                          suppressAutoSize=False,
                           headerHeight=0,
                           )  # Prevent auto update
 
