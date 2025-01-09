@@ -198,19 +198,44 @@ class NumberInputRenderer {
     init(params) {
         this.params = params;
 
-        this.eGui = document.createElement('input');
-        this.eGui.type = 'number';
-        this.eGui.value = params.value;
-        this.eGui.style.width = '100%';
+        // Create a container div
+        this.eGui = document.createElement('div');
+        this.eGui.style.display = 'flex';
+        this.eGui.style.alignItems = 'center';
+        
+        // Create the 'Decrease' button
+        this.decreaseButton = document.createElement('button');
+        this.decreaseButton.innerText = '-';
+        this.decreaseButton.style.marginRight = '5px';
+        this.decreaseButton.style.width = '40px';  // Set the width of the button
+        
+        // Create the value display
+        this.valueDisplay = document.createElement('span');
+        this.valueDisplay.innerText = params.value;
+        this.valueDisplay.style.marginRight = '5px';
+        
+        // Create the 'Increase' button
+        this.increaseButton = document.createElement('button');
+        this.increaseButton.innerText = '+';
+        this.increaseButton.style.width = '40px';  // Set the width of the button
 
-        this.changeHandler = this.changeHandler.bind(this);
-        this.eGui.addEventListener('input', this.changeHandler);
+        // Append buttons and value display to the container
+        this.eGui.appendChild(this.decreaseButton);
+        this.eGui.appendChild(this.valueDisplay);
+        this.eGui.appendChild(this.increaseButton);
+
+        // Add event listeners for the buttons
+        this.decreaseButton.addEventListener('click', () => this.changeValue(-1));
+        this.increaseButton.addEventListener('click', () => this.changeValue(1));
     }
 
-    changeHandler(e) {
-        let newValue = e.target.value;
-        let colId = this.params.column.colId;
-        this.params.node.setDataValue(colId, parseFloat(newValue));
+    changeValue(delta) {
+        let currentValue = parseFloat(this.valueDisplay.innerText);
+        let newValue = currentValue + delta;
+        
+        // Update the display and the grid value
+        this.valueDisplay.innerText = newValue;
+        this.params.node.setDataValue(this.params.column.colId, newValue);
     }
 
     getGui() {
@@ -218,10 +243,13 @@ class NumberInputRenderer {
     }
 
     destroy() {
-        this.eGui.removeEventListener('input', this.changeHandler);
+        this.decreaseButton.removeEventListener('click', this.changeValue);
+        this.increaseButton.removeEventListener('click', this.changeValue);
     }
 }
 """)
+
+
 
 # Configure AgGrid
 gb = GridOptionsBuilder.from_dataframe(st.session_state.df)
