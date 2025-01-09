@@ -28,6 +28,25 @@ prices = {
     "JägerRedBull": 9.50,
     "Jäger":2.50,
     "FangDieNuss":2.50,
+    "Pfanderlass":-2.00,
+}
+
+prices_adj = {
+    "Wasser": 3.50,
+    "Cola": 3.50,
+    "Spezi": 3.50,
+    "Apfel": 3.50,
+    "RedBull": 4.50,
+    "Bier": 5.00,
+    "Radler": 5.00,
+    "Jever": 3.50,
+    "WeißweinSch":6.00,
+    "WhiskyCola":8.50,
+    "GinTonic": 8.50,
+    "WodkaRedBull": 4.50,
+    "JägerRedBull": 9.50,
+    "Jäger":2.50,
+    "FangDieNuss":2.50,
 }
 
 prices_anti = {
@@ -78,7 +97,7 @@ def calculate_pfand():
 
 # Form layout with alternating column backgrounds
 with st.form(key="drinkform", clear_on_submit=True):
-    for drink in prices:
+    for drink in prices_adj:
         cols = st.columns([1, 3], vertical_alignment="center")  # Adjust column sizes [1, 3]
         with cols[0]:
             st.write(f"{drink}")
@@ -120,7 +139,7 @@ if submitButton:
     # Calculate total drinks cost
     total = 0
     for drink, count in st.session_state.counts.items():
-        total += count * prices[drink]
+        total += count * prices_adj[drink]
 
     # Calculate Pfand and adjust based on user input (if any reduction is applied)
     st.session_state.pfand_total = calculate_pfand()  # Update Pfand based on counts
@@ -133,7 +152,7 @@ if submitButton:
     st.write("### Zusammenfassung")
     for drink, count in st.session_state.counts.items():
         if count > 0:
-            st.write(f"{drink}: {count} x {prices[drink]:.2f}€ = {count * prices[drink]:.2f}€")
+            st.write(f"{drink}: {count} x {prices_adj[drink]:.2f}€ = {count * prices_adj[drink]:.2f}€")
     
     # Display the total Pfand and Pfand zurück
     st.write(f"**Pfand**: {st.session_state.pfand_total} x 2€ = {st.session_state.pfand_total}€")
@@ -142,7 +161,7 @@ if submitButton:
         #st.write(f"**Adjusted Pfand**: {adjusted_pfand} x 2€ = {adjusted_pfand}€")
 
     # Reset counts and Pfand for the next calculation
-    st.session_state.counts = {drink: 0 for drink in prices}  # Reset counts after calculation
+    st.session_state.counts = {drink: 0 for drink in prices_adj}  # Reset counts after calculation
     st.session_state.pfand_total = 0  # Reset Pfand total for the next calculation
 
 
@@ -163,17 +182,17 @@ import streamlit as st
 import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
 
-# Initialize the DataFrame
+# Initial DataFrame
 data = {
-    "Name": list(prices.keys()),  # Populate the 'Name' column with keys from prices
-    "Amount": [0] * len(prices),  # Default amounts to 0
+    'Name': list(prices.keys()),
+    'Amount': [0] * len(prices),  # Initialize Amount as 0 for each item
 }
 
-# Initialize session state for DataFrame
-if "grid_data" not in st.session_state:
-    st.session_state.grid_data = pd.DataFrame(data)
+# Store the initial data in session_state if it's not already set
+if 'df' not in st.session_state:
+    st.session_state.df = pd.DataFrame(data)
 
-# JavaScript for number input renderer
+# JavaScript code to create a number input field in the grid
 number_input_renderer = JsCode("""
 class NumberInputRenderer {
     init(params) {
@@ -205,31 +224,89 @@ class NumberInputRenderer {
 """)
 
 # Configure AgGrid
-df = st.session_state.grid_data
-gb = GridOptionsBuilder.from_dataframe(df)
-gb.configure_column('Amount', editable=True, cellRenderer=number_input_renderer)  # Number input
-gb.configure_grid_options(suppressMovableColumns=True)
+gb = GridOptionsBuilder.from_dataframe(st.session_state.df)
+gb.configure_column('Amount', 
+                    editable=True, 
+                    autoSize=True,
+                    sortable = False,
+                    filterable = False, 
+                    cellRenderer=number_input_renderer
+                    )  # Number input
+#gb.configure_column('Name', width=200)  # Set the width for 'Name' column
+#gb.configure_column('Amount', width=150)  # Set the width for 'Amount' column
+gb.configure_column('Name', 
+                    autoSize=True, 
+                    sortable=False, 
+                    filterable=False)
+gb.configure_grid_options(update_mode="NO_UPDATE", 
+                          suppressMovableColumns=True,
+                          domLayout='autoHeight', #adjust gridheight to columns
+                          suppressAutoSize=True,
+                          )  # Prevent auto update
 
-# Display the interactive grid
-st.write('#### Interactive Grid')
+# Reset button placed above the table
+if st.button("Reset All to 0"):
+    # Reset Amounts to 0 in the DataFrame and update session_state
+    st.session_state.df['Amount'] = [0] * len(st.session_state.df)
+    st.rerun()  # Trigger rerun to update the table
+
+# Create AgGrid interface
 ag = AgGrid(
-    df,
+    st.session_state.df,
     gridOptions=gb.build(),
     allow_unsafe_jscode=True,
     enable_enterprise_modules=False,
-    reload_data=False  # Prevent data reloading on every change
 )
 
-# Update session state with the edited DataFrame
-st.session_state.grid_data = pd.DataFrame(ag['data'])
-
-# Button to calculate total
+# Button to trigger calculation
 if st.button("Calculate Total"):
-    # Perform calculation only when button is pressed
-    df = st.session_state.grid_data
-    df['Total'] = df['Amount'] * df['Name'].map(prices)  # Match Name with prices and multiply
-    total_sum = df['Total'].sum()
-
+    # Refresh the grid data manually
+    new_data = ag['data']
+    
+    # Calculate the total sum based on the updated 'Amount' column and 'prices' dict
+    total_sum = 0
+    pfand_in_bill=0
+    pfand_return=0
+    pfandfree =0
+    for i, row in new_data.iterrows():
+        if row['Name'] not in ("Pfanderlass", "Jäger", "FangDieNuss"):  # Exclude these drinks from counting towards Pfand
+            name = row['Name']
+            amount = row['Amount']
+            total_sum += amount * prices.get(name, 0)  # Multiply with the price from the dict
+            total_sum += amount * 2 # adding pfand to the drinks that have it
+            pfand_in_bill += amount # number of pfand paid by customer (number of red chips handed out)
+        elif row['Name']=="Pfanderlass":
+            name = row['Name']
+            amount = row['Amount']
+            total_sum += amount * (-2) # calculate pfand back
+            pfand_return += amount # number of pfand refunded (number of red chips received)
+        elif row['Name'] in ("Jäger", "FangDieNuss"):
+            name = row['Name']
+            amount = row['Amount']
+            total_sum += amount * prices.get(name, 0)
+            pfandfree += amount # number of pfandfree
+    
     # Display the total
-    st.write('#### Calculated Total')
-    st.write(f"Total Amount: €{total_sum:.2f}")
+    if (pfand_in_bill-pfand_return>=0):
+        st.write(f"Total: {total_sum:.2f} EUR --- {pfand_in_bill-pfand_return} rote Marken ausgeben")
+    else:
+        st.write(f"Total: {total_sum:.2f} EUR --- {pfand_return-pfand_in_bill} rote Marken geben lassen")
+
+
+    st.subheader("Details")
+    for i in range(len(new_data)):
+    # Check if the 'Amount' for each row is not zero
+        if new_data['Amount'][i] != 0:
+            name = new_data['Name'][i]  # Get the 'Name' for the current row
+            amount = new_data['Amount'][i]  # Get the 'Amount' for the current row
+            single_price = prices.get(name, 0)  # Get the price from the 'prices' dict
+            st.write(f"{name}:   {amount} * {single_price} = {amount * single_price}€")
+    st.write(f"Pfand:   {pfand_in_bill} * 2€ = {pfand_in_bill*2}€")
+    st.write("")
+    st.write(f"{pfand_return} rote Marken von Kunden geben lassen.")
+    st.write(f"{pfand_in_bill} rote Marken ausgeben.")
+
+st.subheader("Info")
+st.write("Pfand wird automatisch hinzugefügt und muss manuell wieder abgezogen werden falls nicht fällig. Dies ist durch Zahlen in 'Pfanderlass' möglich.")
+st.write("Bsp.: Kunde kommt mit 2 leeren Bechern Bier und will ein Neues (-> Bier auf 1, Pfanderlass auf 2 und eine Pfandmarke geben lassen)")
+st.write("Bsp.: Kunde kommt mit 2 leeren Bechern Bier und will 3 Neue (-> Bier auf 3, Pfanderlass auf 2 und eine rote Marke ausgeben)")
