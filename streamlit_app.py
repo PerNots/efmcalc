@@ -163,14 +163,17 @@ import streamlit as st
 import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
 
+# Initialize the DataFrame
 data = {
-    'Name': ['a', 'b', 'c'],
-    'Amount': [10, 20, 30],
-    'Paid': [True, False, True],
-    'Attended': [False, True, True]
+    "Name": list(prices.keys()),  # Populate the 'Name' column with keys from prices
+    "Amount": [0] * len(prices),  # Default amounts to 0
 }
 
-# JavaScript code to create a number input field in the grid
+# Initialize session state for DataFrame
+if "grid_data" not in st.session_state:
+    st.session_state.grid_data = pd.DataFrame(data)
+
+# JavaScript for number input renderer
 number_input_renderer = JsCode("""
 class NumberInputRenderer {
     init(params) {
@@ -201,31 +204,32 @@ class NumberInputRenderer {
 }
 """)
 
-# DataFrame
-df = pd.DataFrame(data)
-
-# Display initial data
-st.write('#### Initial Data')
-st.dataframe(df)
-
 # Configure AgGrid
+df = st.session_state.grid_data
 gb = GridOptionsBuilder.from_dataframe(df)
 gb.configure_column('Amount', editable=True, cellRenderer=number_input_renderer)  # Number input
-gb.configure_column('Paid', editable=True, cellRenderer=None)  # Example for keeping checkboxes
-gb.configure_column('Attended', editable=True, cellRenderer=None)  # Example for keeping checkboxes
+gb.configure_grid_options(suppressMovableColumns=True)
 
-# Create AgGrid interface
+# Display the interactive grid
 st.write('#### Interactive Grid')
 ag = AgGrid(
     df,
     gridOptions=gb.build(),
     allow_unsafe_jscode=True,
-    enable_enterprise_modules=False
+    enable_enterprise_modules=False,
+    reload_data=False  # Prevent data reloading on every change
 )
 
-# Get updated data
-new_data = ag['data']
+# Update session state with the edited DataFrame
+st.session_state.grid_data = pd.DataFrame(ag['data'])
 
-# Display updated data
-st.write('#### Updated Data')
-st.dataframe(new_data)
+# Button to calculate total
+if st.button("Calculate Total"):
+    # Perform calculation only when button is pressed
+    df = st.session_state.grid_data
+    df['Total'] = df['Amount'] * df['Name'].map(prices)  # Match Name with prices and multiply
+    total_sum = df['Total'].sum()
+
+    # Display the total
+    st.write('#### Calculated Total')
+    st.write(f"Total Amount: €{total_sum:.2f}")
