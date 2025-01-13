@@ -128,8 +128,8 @@ gb.configure_column('Icon',
                     filterable=False)
 gb.configure_grid_options(update_mode="VALUE_CHANGED", 
                           suppressMovableColumns=True,
-                          domLayout='autoHeight', #adjust gridheight to columns
-                          height = 800,
+                          domLayout='print', #adjust gridheight to columns
+                          #height = 1000,
                           suppressAutoSize=False,
                           headerHeight=0,
                           )  # Prevent auto update
@@ -145,6 +145,7 @@ if st.button("Tabelle zurücksetzen"):
 ag = AgGrid(
     st.session_state.df,
     gridOptions=gb.build(),
+    height = 480,
     allow_unsafe_jscode=True,
     enable_enterprise_modules=False,
     key=f"aggrid_{st.session_state.counter}"
